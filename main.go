@@ -11,12 +11,23 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer ln.Close()
+	fmt.Println("Listen")
 
-	conn, err := ln.Accept()
-	if err != nil {
-		log.Fatal(err)
+	for {
+		conn, err := ln.Accept()
+		if err != nil {
+			log.Fatal(err)
+		}
+		// 1 request to 1 goroutine
+		go func() {
+			defer conn.Close()
+			var req []byte
+			_, err := conn.Read(req)
+			if err != nil {
+				log.Print(err)
+			}
+			conn.Write([]byte("Accepted"))
+		}()
 	}
-	defer conn.Close()
-
-	fmt.Println("REQUEST!")
 }
