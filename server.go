@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net"
+	"net/http"
+	"net/http/httputil"
 )
 
 func server() {
@@ -22,12 +25,18 @@ func server() {
 		// 1 request to 1 goroutine
 		go func() {
 			defer conn.Close()
-			var req []byte
-			_, err := conn.Read(req)
+
+			fmt.Printf("Accept %v\n", conn.RemoteAddr())
+
+			req, err := http.ReadRequest(bufio.NewReader(conn))
 			if err != nil {
-				log.Print(err)
+				log.Println(err)
 			}
-			conn.Write([]byte("Accepted"))
+			dump, err := httputil.DumpRequest(req, true)
+			if err != nil {
+				log.Println(err)
+			}
+			fmt.Println(string(dump))
 		}()
 	}
 }
