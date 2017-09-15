@@ -9,7 +9,7 @@ import (
 	"net/http/httputil"
 )
 
-func server() {
+func server(test chan string) {
 	ln, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		log.Fatal(err)
@@ -23,7 +23,7 @@ func server() {
 			log.Fatal(err)
 		}
 		// 1 request to 1 goroutine
-		go func() {
+		go func(chan string) {
 			defer conn.Close()
 
 			fmt.Printf("Accept %v\n", conn.RemoteAddr())
@@ -37,6 +37,7 @@ func server() {
 				log.Println(err)
 			}
 			fmt.Println(string(dump))
-		}()
+			test <- "test string"
+		}(test)
 	}
 }
